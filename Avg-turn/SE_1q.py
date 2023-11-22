@@ -1,43 +1,49 @@
 import json
 import matplotlib.pyplot as plt
+import pandas as pd
 
-def AvgPromptCount(json_file_path, Chart_title):
-    with open(json_file_path, 'r') as file:
-        data = json.load(file)
+class ChatGPTAnalyzer:
+    def __init__(self, json_file_path):
+        self.data = self.load_json(json_file_path)
+        self.prompts_data = self.extract_prompts_data()
 
-    i = 0
-    opened = []
-    closed = []
+    def load_json(self, file_path):
+        with open(file_path, 'r') as file:
+            return json.load(file)
 
-    for source in data['Sources']:
-        i = i + 1
-        if source['State'] == "CLOSED":
-            for y in source['ChatgptSharing']:
-                if 'NumberOfPrompts' in y:
-                    opened.append(y['NumberOfPrompts'])
-        else:
-            for y in source['ChatgptSharing']:
-                if 'NumberOfPrompts' in y:
-                    closed.append(y['NumberOfPrompts'])
+    def extract_prompts_data(self):
+        return [{'State': source['State'], 'NumberOfPrompts': y.get('NumberOfPrompts', 0)}
+                for source in self.data.get('Sources', [])
+                for y in source.get('ChatgptSharing', [])]
 
-    AverageOpened = round(sum(opened) / len(opened))
-    AverageClosed = round(sum(closed) / len(closed))
+    def calculate_avg_prompts(self):
+        df = pd.DataFrame(self.prompts_data)
+        return df.groupby('State')['NumberOfPrompts'].mean().round().reindex(['OPEN', 'CLOSED'], fill_value=0)
 
-    # categories
-    categories = ['Open', 'Closed']
-    values = [AverageOpened, AverageClosed]
+    def create_pie_chart(self, sizes, labels, chart_title):
+        plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+        plt.axis('equal')  # Equal aspect ratio ensures that the pie is drawn as a circle.
 
-    plt.plot(categories, values, marker='o', linestyle='-', color='b')
+        # Adding title
+        plt.title(chart_title)
 
-    # Adding labels and title
-    plt.xlabel('Issue State')
-    plt.ylabel('Count')
-    plt.title(Chart_title)
+        # Show the pie chart
+        plt.show()
 
-    # Show the line plot
-    plt.show()
+    def analyze_and_visualize_pie(self, chart_title):
+        avg_prompts = self.calculate_avg_prompts()
+        sizes = avg_prompts.values
+        labels = avg_prompts.index
 
+        self.create_pie_chart(sizes, labels, chart_title)
+
+
+# Example usage
 json_file_path_pr = '/content/DevGPT/snapshot_20230831/20230831_060603_pr_sharings.json'
 json_file_path_issue = '/content/DevGPT/snapshot_20230831/20230831_061759_issue_sharings.json'
-AvgPromptCount(json_file_path_pr, 'Pull Request')
-AvgPromptCount(json_file_path_issue, 'Issue')
+
+analyzer_pr = ChatGPTAnalyzer(json_file_path_pr)
+analyzer_issue = ChatGPTAnalyzer(json_file_path_issue)
+
+analyzer_pr.analyze_and_visualize_pie('Pull Request')
+analyzer_issue.analyze_and_visualize_pie('Issue')
