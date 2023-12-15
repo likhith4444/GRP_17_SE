@@ -20,30 +20,30 @@ class ChatGPTAnalyzer:
         df = pd.DataFrame(self.prompts_data)
         return df.groupby('State')['NumberOfPrompts'].mean().round().reindex(['OPEN', 'CLOSED'], fill_value=0)
 
-    def create_pie_chart(self, sizes, labels, chart_title):
-        plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-        plt.axis('equal')  # Equal aspect ratio ensures that the pie is drawn as a circle.
+    def create_bar_chart(self, data, chart_title, ax):
+        data.plot(kind='bar', ax=ax)
+        ax.set_title(chart_title)
+        ax.set_ylabel('Average Number of Turns')
+        ax.set_xlabel('State')
 
-        # Adding title
-        plt.title(chart_title)
-
-        # Show the pie chart
-        plt.show()
-
-    def analyze_and_visualize_pie(self, chart_title):
+    def analyze_and_visualize_bar(self):
         avg_prompts = self.calculate_avg_prompts()
-        sizes = avg_prompts.values
-        labels = avg_prompts.index
+        return avg_prompts
 
-        self.create_pie_chart(sizes, labels, chart_title)
+# Initialize the analyzers
+analyzer_pr = ChatGPTAnalyzer('/content/20230831_060603_pr_sharings.json')
+analyzer_issue = ChatGPTAnalyzer('/content/20230831_061759_issue_sharings.json')
 
+# Get the data
+data_pr = analyzer_pr.analyze_and_visualize_bar()
+data_issue = analyzer_issue.analyze_and_visualize_bar()
 
-# Example usage
-json_file_path_pr = '/content/DevGPT/snapshot_20230831/20230831_060603_pr_sharings.json'
-json_file_path_issue = '/content/DevGPT/snapshot_20230831/20230831_061759_issue_sharings.json'
+# Create subplots
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
-analyzer_pr = ChatGPTAnalyzer(json_file_path_pr)
-analyzer_issue = ChatGPTAnalyzer(json_file_path_issue)
+# Create the bar charts
+analyzer_pr.create_bar_chart(data_pr, 'Pull Request', ax1)
+analyzer_issue.create_bar_chart(data_issue, 'Issue', ax2)
 
-analyzer_pr.analyze_and_visualize_pie('Pull Request')
-analyzer_issue.analyze_and_visualize_pie('Issue')
+plt.tight_layout()
+plt.show()
