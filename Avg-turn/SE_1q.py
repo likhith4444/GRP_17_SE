@@ -1,54 +1,49 @@
 import json
 import matplotlib.pyplot as plt
+import pandas as pd
 
-def AvgPromptCount(json_file_path,Chart_title):
+class ChatGPTAnalyzer:
+    def __init__(self, json_file_path):
+        self.data = self.load_json(json_file_path)
+        self.prompts_data = self.extract_prompts_data()
 
-  with open(json_file_path, 'r') as file:
-      data = json.load(file)
-  i=0;
-  opened = [];
-  closed=[];
-  for source in data['Sources']:
-      i=i+1;
-      if source['State']=="CLOSED":
-          for y in source['ChatgptSharing']:
-              if 'NumberOfPrompts' in y:
-                  #print(y['NumberOfPrompts'])
-                  opened.append(y['NumberOfPrompts'])
-      else:
-          for y in source['ChatgptSharing']:
-              if 'NumberOfPrompts' in y:
-                  #print(y['NumberOfPrompts'])
-                  closed.append(y['NumberOfPrompts'])
+    def load_json(self, file_path):
+        with open(file_path, 'r') as file:
+            return json.load(file)
 
+    def extract_prompts_data(self):
+        return [{'State': source['State'], 'NumberOfPrompts': y.get('NumberOfPrompts', 0)}
+                for source in self.data.get('Sources', [])
+                for y in source.get('ChatgptSharing', [])]
 
-  AverageOpened=round(sum(opened)/len(opened));
-  AverageClosed=round(sum(closed)/len(closed));
-  #print(i);
-  #print('opened:',AverageOpened);
-  #print('closed:',AverageClosed);
+    def calculate_avg_prompts(self):
+        df = pd.DataFrame(self.prompts_data)
+        return df.groupby('State')['NumberOfPrompts'].mean().round().reindex(['OPEN', 'CLOSED'], fill_value=0)
 
-  #categories
-  categories = [];
-  categories.append('Open')
-  categories.append('Closed')
-  values = [];
-  values.append(AverageOpened);
-  values.append(AverageClosed);
+    def create_bar_chart(self, data, chart_title, ax):
+        data.plot(kind='bar', ax=ax)
+        ax.set_title(chart_title)
+        ax.set_ylabel('Average Number of Turns')
+        ax.set_xlabel('State')
 
+    def analyze_and_visualize_bar(self):
+        avg_prompts = self.calculate_avg_prompts()
+        return avg_prompts
 
-  plt.bar(categories, values)
+# Initialize the analyzers
+analyzer_pr = ChatGPTAnalyzer('/content/20230831_060603_pr_sharings.json')
+analyzer_issue = ChatGPTAnalyzer('/content/20230831_061759_issue_sharings.json')
 
-  # Adding labels and title
-  plt.xlabel('Issue State')
-  plt.ylabel('Count')
-  plt.title(Chart_title)
+# Get the data
+data_pr = analyzer_pr.analyze_and_visualize_bar()
+data_issue = analyzer_issue.analyze_and_visualize_bar()
 
-  # Show the bar chart
-  plt.show()
+# Create subplots
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
+# Create the bar charts
+analyzer_pr.create_bar_chart(data_pr, 'Pull Request', ax1)
+analyzer_issue.create_bar_chart(data_issue, 'Issue', ax2)
 
-json_file_path = 'C:\Users\yaram\Downloads\DevGPT\snapshot_20230831\20230831_060603_pr_sharings.json'
-
-AvgPromptCount('C:\Users\yaram\Downloads\DevGPT\snapshot_20230831\20230831_060603_pr_sharings.json','Pull Request')
-AvgPromptCount('C:\Users\yaram\Downloads\DevGPT\snapshot_20230831\20230831_061759_issue_sharings.json','Issue')
+plt.tight_layout()
+plt.show()
