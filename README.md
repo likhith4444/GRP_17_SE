@@ -19,8 +19,15 @@ In the Avg-turn folder,
         Result_code is the piechart image that was till review, and after review after the advice given so that result should be more understanding, we have changed it ti a bar plot, i.e, uodated result image.
         
 In Coding and Non-Coding Accuracy
-        
-
+        CodingfilterData.py -> To filter data set based on coding question
+        codingQuestionsFilteredData.json ->output containing coding questions from dataset
+        codingQuestionCount.py -> To filter coding questions based on the keyphrases like 'I apologize for the inconvenience' etc..
+        codingQuestionCount.json -> Output containing data based on keyphrases
+        codingQuestionLength.json -> python code to calculate the count of objects in json file.
+        NonCodingfilterData.py -> To filter data set based on coding question
+        NonCodingQuestionsFilteredData.json ->output containing coding questions from dataset
+        NonCodingQuestionCount.py -> To filter coding questions based on the keyphrases like 'I apologize for the inconvenience' etc..
+        NonCodingQuestionCount.json -> Output containing data based on keyphrases
 In Feedback Impac
         Detect Tone is a sentimental analysis file, which tones the responses and categorize it. This will be used for the next file. i.e,-
         main_code which has the main algorithm that classisfies whether the Developer is satisfied with the help of code and Detect Tone
