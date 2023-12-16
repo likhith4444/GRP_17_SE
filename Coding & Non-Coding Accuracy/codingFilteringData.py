@@ -30,4 +30,13 @@ with open(output_file_path, 'w') as json_file:
 
 print("Filtered data saved to codingQuestionsFilteredData.json")
 
+# Load the JSON data from the file
+with open('codingQuestionsFilteredData.json', 'r') as file:
+    data = json.load(file)
+
+# Calculate the length of the list
+lengthofcodingquestions = len(data)
+
+print(f"The length of the JSON file is: {lengthofcodingquestions}")
+
 
