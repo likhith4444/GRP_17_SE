@@ -2,7 +2,7 @@ import os
 import json
 
 # Directory containing your JSON files
-directory_path = "/content/DevGPT/snapshot_20230727/"
+directory_path = "C:\Users\yaram\Desktop\DevGPT\snapshot_20230727"
 
 
 # List all JSON files in the directory
@@ -24,7 +24,7 @@ for json_file in json_files:
                         filtered_data.append({"Answer": prompt_answer["Answer"]})
 
 # Save the filtered data to a new JSON file
-output_file_path = "/content/drive/MyDrive/codingQuestionsFilteredData.json"
+output_file_path = "C:\Users\yaram\OneDrive\Documents\GitHub\GRP_17_SE\Coding & Non-Coding Accuracy\codingQuestionsFilteredData.json"
 with open(output_file_path, 'w') as json_file:
     json.dump(filtered_data, json_file, indent=4)
 
